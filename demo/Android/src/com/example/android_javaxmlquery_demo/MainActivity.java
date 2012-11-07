@@ -55,7 +55,7 @@ public class MainActivity extends Activity
 					XML_Element specificElement = xmlRoot.find("#searchform>input[type=submit]").get(0);
 					String readableXMLElement = specificElement.toString();
 					// So you can manipulate Object and generate new state like
-					specificElement.attributes.put("key", "value");
+					specificElement.attr("key", "value");
 					String readableXMLElementWithNewAttribute = specificElement.toString();
 				}
 				catch (Exception e)
