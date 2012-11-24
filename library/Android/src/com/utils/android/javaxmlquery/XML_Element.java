@@ -1,5 +1,6 @@
 package com.utils.android.javaxmlquery;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,8 +12,10 @@ import android.text.TextUtils;
 import android.util.Log;
 
 
-public class XML_Element
+public class XML_Element implements Serializable
 {
+	private static final long serialVersionUID = 2236803605050972676L;
+	
 	private static final String ATTRIBUTE_EQUALS			= "=";
 	private static final String ATTRIBUTE_NOT_EQUALS		= "!=";
 	private static final String ATTRIBUTE_CONTAINS			= "~=";
