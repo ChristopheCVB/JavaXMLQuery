@@ -33,14 +33,14 @@ public class XML_ParserHandler extends DefaultHandler
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException
 	{
 		this.buffer = new StringBuffer();
-		this.currentChild = this.currentChild.addChild(localName);
+		this.currentChild = this.currentChild.addChild(qName);
 		this.currentChild.addAttributes(attributes);
 	}
 	
 	@Override
 	public void endElement(String uri, String localName, String name) throws SAXException
 	{
-		if(this.currentChild != null)
+		if (this.currentChild != null)
 		{
 			this.currentChild.value = this.buffer.toString().trim();
 			this.buffer = new StringBuffer();
