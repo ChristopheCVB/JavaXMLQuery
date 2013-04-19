@@ -36,7 +36,8 @@ http://stackoverflow.com/questions/6923044/java-library-using-css-selectors-to-p
 - Read XML
 - Manipulate XML
 
-# 
+# Usage Example
+
     String myXMLDocument = "<html><head> ... </head><body> ... </body></html>";
     XML_Parser parser = new XML_Parser(new ByteArrayInputStream(myXMLDocument.getBytes()));
     XML_Element xmlElementHTML = parser.getData();
