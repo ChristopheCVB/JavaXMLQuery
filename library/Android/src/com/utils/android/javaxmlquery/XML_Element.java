@@ -47,7 +47,8 @@ public class XML_Element
 	}
 	
 	/**
-	 * adds in the HashMap this.attributes, the different associated key/value
+	 * Add in HashMap this.attributes, the different associated key/value
+	 * 
 	 * @param attributes of the object
 	 */
 	protected void addAttributes(Attributes attributes)
@@ -65,11 +66,12 @@ public class XML_Element
 			}
 		}
 	}
-
+	
 	/**
-	 * creates a PJ_Element child of this, and adds it in this.children
+	 * Creates a {@link XML_Element} child of this, and adds it in this.children
+	 * 
 	 * @param childName name of the tag
-	 * @return
+	 * @return newChild {@link XML_Element}
 	 */
 	protected XML_Element addChild(String childName)
 	{
@@ -82,6 +84,11 @@ public class XML_Element
 		return child;
 	}
 	
+	/**
+	 * Get the first child of current {@link XML_Element}
+	 * 
+	 * @return firstChild {@link XML_Element}
+	 */
 	public XML_Element firstChild()
 	{
 		XML_Element child = null;
@@ -93,7 +100,8 @@ public class XML_Element
 	}
 	
 	/**
-	 * gets an attribute linked to this XML_Element
+	 * Get an attribute linked to this {@link XML_Element}
+	 * 
 	 * @param attrName key to find
 	 * @return the value associated to the key tagName, or <b>""</b> otherwise
 	 */
@@ -111,6 +119,23 @@ public class XML_Element
 		return value;
 	}
 	
+	/**
+	 * Add an key/value pair has an attribute
+	 * 
+	 * @param key
+	 * @param value
+	 * @return the value of any previous mapping with the specified key or null if there was no such mapping
+	 */
+	public String attr(String key, String value)
+	{
+		return this.attributes.put(key, value);
+	}
+	
+	/**
+	 * Get the value of current {@link XML_Element}
+	 * 
+	 * @return value - String
+	 */
 	public String val()
 	{
 		return this.value;
@@ -350,7 +375,7 @@ public class XML_Element
 			currentTag = tmpTag.split(XML_Element.REGEX_HOOK_END)[0].trim();
 			attributeSelectors.add(currentTag);
 		}
-
+		
 		XML_Elements finalElements = new XML_Elements();
 		for (String attributeSelector : attributeSelectors)
 		{

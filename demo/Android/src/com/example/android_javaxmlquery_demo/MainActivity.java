@@ -66,7 +66,7 @@ public class MainActivity extends Activity
 		}).start();
 		
 		
-		// Example 01
+		// Example 02
 		new Thread(new Runnable()
 		{
 			@Override
