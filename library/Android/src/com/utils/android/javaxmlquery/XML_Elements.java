@@ -13,11 +13,7 @@ public class XML_Elements extends ArrayList<XML_Element>
 	 */
 	public String attr(String attrName)
 	{
-		if (this.size() == 0)
-		{
-			return "";
-		}
-		return this.get(0).attr(attrName);
+		return !this.isEmpty() ? this.get(0).attr(attrName) : "";
 	}
 	
 	/**
@@ -26,32 +22,28 @@ public class XML_Elements extends ArrayList<XML_Element>
 	 */
 	public String val()
 	{
-		if (this.size() == 0)
-		{
-			return "";
-		}
-		return this.get(0).val();
+		return !this.isEmpty() ? this.get(0).val() : "";
 	}
 	
 	/**
 	 * finds all the XML_Element children named <i>tagName</i>. This method can have in param a css3 like selector (using <i>">"</i>, <i>"[...=...]"</i>)
-	 * @param selector name of the XML_Element children. 
+	 * @param selector name of the XML_Element children.
 	 * @return a <b>XML_Elements</b> containing all the XML_Element children
 	 */
 	public XML_Elements find(String selector)
 	{
 		XML_Elements elements = new XML_Elements();
-
+		
 		for (XML_Element element : this)
 		{
 			elements.addAll(element.find(selector));
 		}
 		return elements;
 	}
-
+	
 	/**
 	 * finds all the direct XML_Element children named <i>tagName</i>. This method can have in param a css3 like selector (using <i>">"</i>, <i>"[...=...]"</i>)
-	 * @param tagName name of the XML_Element children. 
+	 * @param tagName name of the XML_Element children.
 	 * @return a <b>XML_Elements</b> containing all the XML_Element children
 	 */
 	public XML_Elements findChildren(String tagName)
@@ -65,7 +57,7 @@ public class XML_Elements extends ArrayList<XML_Element>
 		
 		return elements;
 	}
-
+	
 	/**
 	 * @param key
 	 * @param value

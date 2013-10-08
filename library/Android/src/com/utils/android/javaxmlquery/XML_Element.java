@@ -1,19 +1,32 @@
 package com.utils.android.javaxmlquery;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 
 import org.xml.sax.Attributes;
 
 import android.text.TextUtils;
 import android.util.Log;
 
-public class XML_Element implements Serializable
+public class XML_Element
 {
-	private static final long serialVersionUID = 2236803605050972676L;
+	private static final String TAG = "XML_Element";
+	
+	private static final String HOOK_START = "[";
+	private static final String REGEX_HOOK_START = "\\[";
+	private static final String REGEX_HOOK_END = "\\]";
+	private static final String REGEX_DOT_STAR = ".*";
+	private static final String REGEX_DOLLAR = "$";
+	
+	private static final String TO_STRING_SPACE = " ";
+	private static final String TO_STRING_BRACKET_START = "<";
+	private static final String TO_STRING_BRACKET_START_SLASH = "</";
+	private static final String TO_STRING_BRACKET_END = ">";
+	private static final String TO_STRING_BRACKET_END_SLASH = "/>";
+	private static final String TO_STRING_NEW_LINE = "\n";
+	private static final String TO_STRING_TABULATION = "\t";
+	private static final String TO_STRING_DOUBLE_QUOTE = "\"";
+	private static final String TO_STRING_EQUALS_QUOTE = "=\"";
 	
 	private static final String ATTRIBUTE_EQUALS = "=";
 	private static final String ATTRIBUTE_NOT_EQUALS = "!=";
@@ -22,17 +35,15 @@ public class XML_Element implements Serializable
 	private static final String ATTRIBUTE_ENDS_WITH = "$=";
 	
 	public String name;
-	public XML_Element parent;
-	public HashMap<String, String> attributes;
-	public ArrayList<XML_Element> children;
+	protected XML_Element parent;
+	private HashMap<String, String> attributes;
+	private ArrayList<XML_Element> children;
 	protected String value;
 	
 	public XML_Element(XML_Element parent, String name)
 	{
 		this.parent = parent;
 		this.name = name;
-		this.attributes = new HashMap<String, String>();
-		this.children = new ArrayList<XML_Element>();
 	}
 	
 	/**
@@ -42,22 +53,19 @@ public class XML_Element implements Serializable
 	protected void addAttributes(Attributes attributes)
 	{
 		int attributesLength = attributes.getLength();
-		for (int attributeIndex = 0; attributeIndex < attributesLength; attributeIndex++)
+		if (attributesLength > 0)
 		{
-			this.attr(attributes.getLocalName(attributeIndex), attributes.getValue(attributeIndex));
+			if (this.attributes == null)
+			{
+				this.attributes = new HashMap<String, String>();
+			}
+			for (int attributeIndex = 0; attributeIndex < attributesLength; attributeIndex++)
+			{
+				this.attributes.put(attributes.getLocalName(attributeIndex), attributes.getValue(attributeIndex));
+			}
 		}
 	}
-	
-	/**
-	 * adds in the HashMap this.attributes, the a key/value object
-	 * @param key String
-	 * @param value String
-	 */
-	protected void attr(String key, String value)
-	{
-		this.attributes.put(key, value);
-	}
-	
+
 	/**
 	 * creates a PJ_Element child of this, and adds it in this.children
 	 * @param childName name of the tag
@@ -65,6 +73,10 @@ public class XML_Element implements Serializable
 	 */
 	protected XML_Element addChild(String childName)
 	{
+		if (this.children == null)
+		{
+			this.children = new ArrayList<XML_Element>();
+		}
 		XML_Element child = new XML_Element(this, childName);
 		this.children.add(child);
 		return child;
@@ -72,11 +84,12 @@ public class XML_Element implements Serializable
 	
 	public XML_Element firstChild()
 	{
-		if (this.children.size() > 0)
+		XML_Element child = null;
+		if (this.children != null) // if not null, there is at least one child
 		{
-			return this.children.get(0);
+			child = this.children.get(0);
 		}
-		return null;
+		return child;
 	}
 	
 	/**
@@ -86,7 +99,11 @@ public class XML_Element implements Serializable
 	 */
 	public String attr(String attrName)
 	{
-		String value = this.attributes.get(attrName);
+		String value = null;
+		if (this.attributes != null)
+		{
+			value = this.attributes.get(attrName);
+		}
 		if (value == null)
 		{
 			value = "";
@@ -101,72 +118,91 @@ public class XML_Element implements Serializable
 	
 	/**
 	 * finds all the XML_Element children named <i>tagName</i>. This method can have in param a css3 like selector (using <i>">"</i>, <i>"[...=...]"</i>)
+	 * 
 	 * @param selector name of the XML_Element children.
 	 * @return a <b>XML_Elements</b> containing all the XML_Element children
 	 */
 	public XML_Elements find(String selector)
 	{
-		long start = new Date().getTime();
-		XML_Elements elements = new XML_Elements();
+		long start = System.currentTimeMillis();
+		XML_Elements elements = null;
 		if (TextUtils.isEmpty(selector))
 		{
+			elements = new XML_Elements();
 			elements.add(this);
 		}
-		else if (selector.contains(">"))
+		else if (selector.contains(XML_Element.TO_STRING_BRACKET_END))
 		{
 			elements = this.selectByArrow(selector);
 		}
-		else if (selector.contains("["))
+		else if (selector.contains(XML_Element.HOOK_START))
 		{
 			elements = this.selectByAttribute(selector, false);
 		}
 		else
 		{
-			for (XML_Element element : this.children)
+			elements = new XML_Elements();
+			if (this.children != null)
 			{
-				if (element.name.equals(selector))
+				for (XML_Element element : this.children)
 				{
-					elements.add(element);
+					if (element.name.equals(selector))
+					{
+						elements.add(element);
+					}
+					elements.addAll(element.find(selector));
 				}
-				elements.addAll(element.find(selector));
 			}
 		}
 		
-		long end = new Date().getTime();
+		long end = System.currentTimeMillis();
 		long duration = end - start;
 		if (duration > 1)
 		{
 			StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
 			StackTraceElement caller = stackTraceElements[3];
 			String fullClassName = caller.getClassName();
-			Log.w("XML_Element", "find(" + selector + ") " + elements.size() + " elements in " + duration + "ms called by " + fullClassName.substring(fullClassName.lastIndexOf(".") + 1) + "." + caller.getMethodName());
+			StringBuilder messageBuilder = new StringBuilder("find(").append(selector).append(") ");
+			messageBuilder.append(elements.size()).append(" elements in ").append(duration).append("ms called by ");
+			messageBuilder.append(fullClassName.substring(fullClassName.lastIndexOf(".") + 1));
+			messageBuilder.append(".").append(caller.getMethodName());
+			Log.w(XML_Element.TAG, messageBuilder.toString());
 		}
 		return elements;
 	}
 	
 	/**
 	 * finds all the direct XML_Element children named <i>tagName</i>. This method can have in param a css3 like selector (using <i>">"</i>, <i>"[...=...]"</i>)
+	 * 
 	 * @param tagName name of the XML_Element children.
 	 * @return a <b>XML_Elements</b> containing all the XML_Element children
 	 */
 	protected XML_Elements findChildren(String tagName)
 	{
-		XML_Elements elements = new XML_Elements();
+		XML_Elements elements = null;
 		if (TextUtils.isEmpty(tagName))
 		{
-			elements.addAll(this.children);
+			elements = new XML_Elements();
+			if (this.children != null)
+			{
+				elements.addAll(this.children);
+			}
 		}
-		else if (tagName.contains("["))
+		else if (tagName.contains(XML_Element.HOOK_START))
 		{
 			elements = this.selectByAttribute(tagName, true);
 		}
 		else
 		{
-			for (XML_Element element : this.children)
+			elements = new XML_Elements();
+			if (this.children != null)
 			{
-				if (element.name.equals(tagName))
+				for (XML_Element element : this.children)
 				{
-					elements.add(element);
+					if (element.name.equals(tagName))
+					{
+						elements.add(element);
+					}
 				}
 			}
 		}
@@ -176,30 +212,41 @@ public class XML_Element implements Serializable
 	/**
 	 * @param key name of the attribute
 	 * @param value
-	 * @return true if has an attribute with key as name and value associated to key. If value is null, return true if has an attribute with key as name.
+	 * @return true if has an attribute with key as name and if value is not null, value associated to key.
 	 */
 	protected boolean hasAttribute(String key, String value)
 	{
+		boolean hasAttribute = false;
 		if (value == null)
 		{
-			return this.hasAttribute(key);
+			hasAttribute = this.hasAttribute(key);
 		}
-		return value.equals(this.attributes.get(key));
+		else
+		{
+			hasAttribute = (this.attributes != null) && value.equals(this.attributes.get(key));
+		}
+		return hasAttribute;
 	}
 	
 	/**
 	 * @param key name of the attribute
-	 * @param valueExp
-	 * @return true if has an attribute with key as name and value associated to key. If valueExp is null, return true if has an attribute with key as name.
+	 * @param valueExp - String
+	 * @return true if has an attribute with key as name and if valueExp is not null, valueExp matching this attribute value .
 	 */
 	protected boolean matchesAttribute(String key, String valueExp)
 	{
+		boolean isMatching = false;
 		if (valueExp == null)
 		{
-			return this.hasAttribute(key);
+			isMatching = this.hasAttribute(key);
 		}
-		String value = this.attributes.get(key);
-		return value != null && value.matches(valueExp);
+		else if (this.attributes != null)
+		{
+			String value = this.attributes.get(key);
+			isMatching = (value != null) && value.matches(valueExp);
+		}
+		
+		return isMatching;
 	}
 	
 	/**
@@ -208,7 +255,7 @@ public class XML_Element implements Serializable
 	 */
 	protected boolean hasAttribute(String key)
 	{
-		return this.attributes.containsKey(key);
+		return (this.attributes != null) && this.attributes.containsKey(key);
 	}
 	
 	/**
@@ -218,11 +265,14 @@ public class XML_Element implements Serializable
 	protected XML_Elements findByAttribute(String key)
 	{
 		XML_Elements elements = new XML_Elements();
-		for (XML_Element element : this.children)
+		if (this.children != null)
 		{
-			if (element.attr(key) != null)
+			for (XML_Element element : this.children)
 			{
-				elements.add(element);
+				if (element.attr(key) != null)
+				{
+					elements.add(element);
+				}
 			}
 		}
 		return elements;
@@ -240,7 +290,7 @@ public class XML_Element implements Serializable
 		{
 			elements = this.findByAttribute(key);
 		}
-		else
+		else if (this.children != null)
 		{
 			for (XML_Element element : this.children)
 			{
@@ -260,11 +310,9 @@ public class XML_Element implements Serializable
 	 */
 	protected XML_Elements selectByArrow(String tagName)
 	{
-		XML_Elements elements = new XML_Elements();
-		final String[] tags = tagName.split(">");
-		
+		String[] tags = tagName.split(XML_Element.TO_STRING_BRACKET_END);
 		String currentTag = tags[0].trim();
-		elements = this.find(currentTag);
+		XML_Elements elements = this.find(currentTag);
 		
 		for (int tagIndex = 1; tagIndex < tags.length; tagIndex++)
 		{
@@ -275,6 +323,7 @@ public class XML_Element implements Serializable
 		return elements;
 	}
 	
+	
 	/**
 	 * is used in the particular case where the is "[" in the tagName.
 	 * @param selector
@@ -282,8 +331,8 @@ public class XML_Element implements Serializable
 	 */
 	protected XML_Elements selectByAttribute(String selector, boolean isChild)
 	{
-		XML_Elements elements = new XML_Elements();
-		final String[] tmpTagNames = selector.split("\\[");
+		XML_Elements elements = null;
+		String[] tmpTagNames = selector.split(XML_Element.REGEX_HOOK_START);
 		ArrayList<String> attributeSelectors = new ArrayList<String>();
 		
 		String currentTag = tmpTagNames[0].trim();
@@ -296,11 +345,12 @@ public class XML_Element implements Serializable
 			elements = this.find(currentTag);
 		}
 		
-		for (int tmpTagIndex = 1; tmpTagIndex < tmpTagNames.length; tmpTagIndex++)
+		for (String tmpTag : tmpTagNames)
 		{
-			currentTag = tmpTagNames[tmpTagIndex].split("\\]")[0].trim();
+			currentTag = tmpTag.split(XML_Element.REGEX_HOOK_END)[0].trim();
 			attributeSelectors.add(currentTag);
 		}
+
 		XML_Elements finalElements = new XML_Elements();
 		for (String attributeSelector : attributeSelectors)
 		{
@@ -309,29 +359,34 @@ public class XML_Element implements Serializable
 			boolean isPositive = true;
 			if (attributeSelector.contains(XML_Element.ATTRIBUTE_NOT_EQUALS))
 			{
-				key = attributeSelector.split(XML_Element.ATTRIBUTE_NOT_EQUALS)[0];
-				valueExp = attributeSelector.split(XML_Element.ATTRIBUTE_NOT_EQUALS)[1];
+				String[] tab = attributeSelector.split(XML_Element.ATTRIBUTE_NOT_EQUALS);
+				key = tab[0];
+				valueExp = tab[1];
 				isPositive = false;
 			}
 			else if (attributeSelector.contains(XML_Element.ATTRIBUTE_STARTS_WITH))
 			{
-				key = attributeSelector.split(XML_Element.ATTRIBUTE_STARTS_WITH)[0];
-				valueExp = attributeSelector.split(XML_Element.ATTRIBUTE_STARTS_WITH)[1] + ".*";
+				String[] tab = attributeSelector.split(XML_Element.ATTRIBUTE_STARTS_WITH);
+				key = tab[0];
+				valueExp = tab[1] + XML_Element.REGEX_DOT_STAR;
 			}
 			else if (attributeSelector.contains(XML_Element.ATTRIBUTE_ENDS_WITH))
 			{
-				key = attributeSelector.split(XML_Element.ATTRIBUTE_ENDS_WITH)[0];
-				valueExp = ".*" + attributeSelector.split(XML_Element.ATTRIBUTE_ENDS_WITH)[1] + "$";
+				String[] tab = attributeSelector.split(XML_Element.ATTRIBUTE_ENDS_WITH);
+				key = tab[0];
+				valueExp = XML_Element.REGEX_DOT_STAR + tab[1] + XML_Element.REGEX_DOLLAR;
 			}
 			else if (attributeSelector.contains(XML_Element.ATTRIBUTE_CONTAINS))
 			{
-				key = attributeSelector.split(XML_Element.ATTRIBUTE_CONTAINS)[0];
-				valueExp = ".*" + attributeSelector.split(XML_Element.ATTRIBUTE_CONTAINS)[1] + ".*";
+				String[] tab = attributeSelector.split(XML_Element.ATTRIBUTE_CONTAINS);
+				key = tab[0];
+				valueExp = XML_Element.REGEX_DOT_STAR + tab[1] + XML_Element.REGEX_DOT_STAR;
 			}
 			else if (attributeSelector.contains(XML_Element.ATTRIBUTE_EQUALS)) // Must be the last tested
 			{
-				key = attributeSelector.split(XML_Element.ATTRIBUTE_EQUALS)[0];
-				valueExp = attributeSelector.split(XML_Element.ATTRIBUTE_EQUALS)[1];
+				String[] tab = attributeSelector.split(XML_Element.ATTRIBUTE_EQUALS);
+				key = tab[0];
+				valueExp = tab[1];
 			}
 			else
 			{
@@ -357,54 +412,71 @@ public class XML_Element implements Serializable
 	}
 	
 	/**
-	 * return a stringified version of the object
+	 * return an xml representation of the object
 	 */
+	@Override
 	public String toString()
 	{
 		return this.toString(0);
 	}
 	
 	/**
-	 * return a stringified version of the object
+	 * return an xml representation of the object
+	 * 
 	 * @param index : level of indents in the logs.
 	 */
 	protected String toString(int index)
 	{
-		final int nextRound = index + 1;
-		String text = "<" + this.name;
+		int nextRound = index + 1;
+		// text = "<" + this.name
+		StringBuilder text = new StringBuilder(XML_Element.TO_STRING_BRACKET_START).append(this.name);
 		
-		Iterator<String> iterator = this.attributes.keySet().iterator();
-		while (iterator.hasNext())
+		if (this.attributes != null)
 		{
-			String key = iterator.next();
-			text += " " + key + "=\"" + this.attributes.get(key) + "\"";
+			for (String key : this.attributes.keySet())
+			{
+				// text += " " + key + "=\"" + this.attributes.get(value) +"\""
+				text.append(XML_Element.TO_STRING_SPACE).append(key).append(XML_Element.TO_STRING_EQUALS_QUOTE).append(this.attributes.get(key)).append(XML_Element.TO_STRING_DOUBLE_QUOTE);
+			}
 		}
-		if (this.children.size() == 0 && TextUtils.isEmpty(this.value))
+		if ((this.children == null) && TextUtils.isEmpty(this.value)) // if (this.children == null) there is no child
 		{
-			text += "/>";
+			// text += "/>"
+			text.append(XML_Element.TO_STRING_BRACKET_END_SLASH);
 		}
 		else
 		{
-			text += ">";
+			// text += ">"
+			text.append(XML_Element.TO_STRING_BRACKET_END);
 			if (!TextUtils.isEmpty(this.value))
 			{
-				text += this.value;
+				// text += this.value
+				text.append(this.value);
 			}
-			for (XML_Element element : this.children)
+			if (this.children != null)
 			{
-				text += "\n";
-				for (int i = 0; i < nextRound; i++)
+				for (XML_Element element : this.children)
 				{
-					text += "\t";
+					// text += "\n"
+					text.append(XML_Element.TO_STRING_NEW_LINE);
+					for (int i = 0; i < nextRound; i++)
+					{
+						// text += "\t"
+						text.append(XML_Element.TO_STRING_TABULATION);
+					}
+					// text += element.toString(nextRound)
+					text.append(element.toString(nextRound));
 				}
-				text += element.toString(nextRound);
 			}
-			for (int i = 0; i < nextRound - 1; i++)
+			for (int i = 0; i < index; i++)
 			{
-				text += "\t";
+				// text += "\t"
+				text.append(XML_Element.TO_STRING_TABULATION);
 			}
-			text += "</" + this.name + ">";
+			// text += "</" + this.name + ">"
+			text.append(XML_Element.TO_STRING_BRACKET_START_SLASH).append(this.name).append(XML_Element.TO_STRING_BRACKET_END);
 		}
-		return text + "\n";
+		// return text + "\n"
+		return text.append(XML_Element.TO_STRING_NEW_LINE).toString();
 	}
 }

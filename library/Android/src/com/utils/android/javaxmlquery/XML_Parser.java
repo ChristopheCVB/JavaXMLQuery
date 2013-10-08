@@ -12,8 +12,8 @@ import org.xml.sax.SAXException;
 
 public class XML_Parser
 {
-	public XML_Element data;
-
+	private XML_Element data;
+	
 	/**
 	 * Let's Parse some XML data
 	 * @param what
@@ -22,12 +22,12 @@ public class XML_Parser
 	{
 		SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
 		SAXParser parser = saxParserFactory.newSAXParser();
-
+		
 		XML_ParserHandler handler = new XML_ParserHandler();
 		
 		parser.parse(input, handler);
 		
-		this.data = handler.getData();
+		this.data = handler.datas;
 	}
 	
 	/**
