@@ -1,3 +1,24 @@
+# Everything started here
+
+http://stackoverflow.com/questions/6923044/java-library-using-css-selectors-to-parse-xml
+
+*And here is the code !*
+
+# Main features of JavaXMLQuery
+
+- Parse XML
+- Read XML
+- Manipulate XML
+
+# Usage Example
+
+    String myXMLDocument = "<html><head> ... </head><body> ... </body></html>";
+    XML_Parser parser = new XML_Parser(new ByteArrayInputStream(myXMLDocument.getBytes()));
+    XML_Element xmlElementHTML = parser.getData();
+    XML_Elements spansInDivClassTitle = xmlElementHTML.find("div[class=title]>span");
+
+
+
     Author: Christophe Carvalho Vilas-Boas <christophe.carvalhovilasboas@gmail.com>
 
     Copyright (c) 2012 Christophe Carvalho Vilas-Boas.
@@ -23,22 +44,3 @@
     WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
     FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
     OTHER DEALINGS IN THE SOFTWARE.
-
-# Everything started here
-
-http://stackoverflow.com/questions/6923044/java-library-using-css-selectors-to-parse-xml
-
-*And here is the code !*
-
-# Main features of JavaXMLQuery
-
-- Parse XML
-- Read XML
-- Manipulate XML
-
-# Usage Example
-
-    String myXMLDocument = "<html><head> ... </head><body> ... </body></html>";
-    XML_Parser parser = new XML_Parser(new ByteArrayInputStream(myXMLDocument.getBytes()));
-    XML_Element xmlElementHTML = parser.getData();
-    XML_Elements spansInDivClassTitle = xmlElementHTML.find("div[class=title]>span");
