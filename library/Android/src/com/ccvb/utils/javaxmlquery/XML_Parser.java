@@ -1,4 +1,4 @@
-package com.utils.android.javaxmlquery;
+package com.ccvb.utils.javaxmlquery;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.utils.android.javaxmlquery;
+package com.ccvb.utils.javaxmlquery;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
